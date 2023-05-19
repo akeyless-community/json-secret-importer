@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -9,6 +10,9 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
+	"strings"
+
+	akeyless "github.com/akeylesslabs/akeyless-go/v2"
 )
 
 type Secret struct {
@@ -18,7 +22,28 @@ type Secret struct {
 	ValidAfter string `json:"valid_after"`
 }
 
+var token string
+var importPath string
+
 func main() {
+
+	// Get AKEYLESS_TOKEN from environment variable or user input
+	token = os.Getenv("AKEYLESS_TOKEN")
+	if len(token) == 0 {
+		fmt.Print("Enter AKEYLESS_TOKEN: ")
+		fmt.Scanln(&token)
+		if len(token) == 0 {
+			fmt.Println("AKEYLESS_TOKEN is required")
+			return
+		}
+	}
+
+	// Get AKEYLESS_IMPORT_STARTING_PATH from environment variable or user input
+	importPath = os.Getenv("AKEYLESS_IMPORT_STARTING_PATH")
+	if len(token) == 0 {
+		importPath = "."
+	}
+
 	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -66,12 +91,74 @@ func processFile(path string) {
 
 	sort.Ints(activeVersions)
 
-	for _, version := range activeVersions {
+	// Get AKEYLESS_SECRET_NAME_PREFIX from environment variable
+	secretNamePrefix := os.Getenv("AKEYLESS_SECRET_NAME_PREFIX")
+
+	// Get AKEYLESS_API_GW_URL from environment variable or use default
+	apiGatewayURL := os.Getenv("AKEYLESS_API_GW_URL")
+	if len(apiGatewayURL) == 0 {
+		apiGatewayURL = "https://api.akeyless.io"
+	}
+
+	// Initialize Akeyless client
+
+	client := akeyless.NewAPIClient(&akeyless.Configuration{
+		Servers: []akeyless.ServerConfiguration{
+			{
+				URL: apiGatewayURL,
+			},
+		},
+	}).V2Api
+
+	// Create a static secret with the oldest version
+	decodedSecret, err := base64.StdEncoding.DecodeString(secrets[strconv.Itoa(activeVersions[0])].Secret)
+	if err != nil {
+		fmt.Println("Error decoding secret:", err)
+		return
+	}
+
+	secretName := secretNamePrefix + strings.TrimSuffix(path, ".json")
+
+	selectedType := "generic"
+
+	createSecretBody := akeyless.CreateSecret{
+		Name:  secretName,
+		Value: string(decodedSecret),
+		Type:  &selectedType,
+		Token: &token,
+	}
+
+	_, _, err = client.CreateSecret(context.Background()).Body(createSecretBody).Execute()
+	if err != nil {
+		fmt.Println("Error creating secret:", err)
+		return
+	}
+
+	fmt.Printf("Created secret with name: %s and version: %d\n", secretName, activeVersions[0])
+
+	// Update the secret with all other versions
+	for _, version := range activeVersions[1:] {
 		decodedSecret, err := base64.StdEncoding.DecodeString(secrets[strconv.Itoa(version)].Secret)
 		if err != nil {
 			fmt.Println("Error decoding secret:", err)
 			return
 		}
-		fmt.Printf("Version: %d, Secret: %s\n", version, string(decodedSecret))
+
+		keepPreviousVersion := "true"
+
+		updateSecretBody := akeyless.UpdateSecretVal{
+			Name:            secretName,
+			Value:           string(decodedSecret),
+			KeepPrevVersion: &keepPreviousVersion,
+			Token:           &token,
+		}
+
+		_, _, err = client.UpdateSecretVal(context.Background()).Body(updateSecretBody).Execute()
+		if err != nil {
+			fmt.Println("Error updating secret:", err)
+			return
+		}
+
+		fmt.Printf("Updated secret with name: %s and version: %d\n", secretName, version)
 	}
 }
