@@ -1,4 +1,4 @@
-# Akeyless Secret Importer
+# Akeyless JSON Secret Importer
 
 A command-line application written in Go that reads JSON secrets from a directory and its subdirectories, then makes API calls to the Akeyless API to create and update secrets.
 
@@ -24,6 +24,10 @@ A command-line application written in Go that reads JSON secrets from a director
 
 1. Set the necessary environment variables.
 2. Run the application.
+
+```sh
+./json-secret-importer
+```
 
 ## Build
 
