@@ -44,7 +44,7 @@ func main() {
 		importPath = "."
 	}
 
-	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(importPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
