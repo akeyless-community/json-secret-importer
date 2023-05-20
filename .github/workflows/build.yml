@@ -1,23 +1,37 @@
-# workflow name
-name: Generate release-artifacts
+name: Automated Release on Tag Push
 
-# on events
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - '*'
 
-# workflow tasks
 jobs:
-  generate:
-    name: Generate cross-platform builds
+  release:
     runs-on: ubuntu-latest
+    permissions:  # IMPORTANT - both of these are required
+      id-token: write
+      contents: read
+    name: Automated Release
     steps:
-      - name: Checkout the repository
+      - name: Checkout code
         uses: actions/checkout@v2
-      - name: Generate build files
-        uses: thatisuday/go-cross-build@v1
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
         with:
-            platforms: 'linux/amd64, darwin/amd64, darwin/arm64, windows/amd64'
-            package: ''
-            name: 'akeyless-json-importer'
-            compress: 'false'
-            dest: 'dist'
+          go-version: 1.20.3
+
+      - name: Fetch secrets from Akeyless
+        id: fetch-secrets
+        uses: akeyless-community/akeyless-action@v3
+        with:
+          access-id: ${{ secrets.AKEYLESS_ACCESS_ID }}     # (ex: 'p-iwt13fd19ajd') We recommend storing this as a GitHub Actions secret
+          static-secrets: '{"/GitHubActions/github PAT":"GITHUB_TOKEN"}'
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ steps.fetch-secrets.outputs.GITHUB_TOKEN }}
