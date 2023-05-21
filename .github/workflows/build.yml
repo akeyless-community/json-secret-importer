@@ -26,7 +26,7 @@ jobs:
         uses: akeyless-community/akeyless-action@v3
         with:
           access-id: ${{ secrets.AKEYLESS_ACCESS_ID }}     # (ex: 'p-iwt13fd19ajd') We recommend storing this as a GitHub Actions secret
-          static-secrets: '{"/GitHubActions/github PAT":"GITHUB_TOKEN"}'
+          static-secrets: '{"/GitHubActions/githubPAT":"GITHUB_TOKEN"}'
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
