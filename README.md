@@ -1,4 +1,4 @@
-# Akeyless JSON Secret Importer
+# Akeyless Secret Importer
 
 A command-line application written in Go that reads JSON secrets from a directory and its subdirectories, then makes API calls to the Akeyless API to create and update secrets.
 
@@ -10,24 +10,17 @@ A command-line application written in Go that reads JSON secrets from a director
 
 ## Environment Variables
 
-- `AKEYLESS_TOKEN`: Required. The token used for Akeyless API calls. If this environment variable is not set, the application will prompt for it at runtime.
-- `AKEYLESS_IMPORT_STARTING_PATH`: Optional. The directory from which the application should start scanning for JSON files. If not set, the application will start from the current working directory (`"."`).
-- `AKEYLESS_SECRET_NAME_PREFIX`: Optional. A prefix to prepend to the secret name for every API call.
-- `AKEYLESS_API_GW_URL`: Optional. The URL to the Akeyless API Gateway. If not set, the application will default to `"https://api.akeyless.io"`.
-
-## Defaults
-
-- `AKEYLESS_IMPORT_STARTING_PATH`: `"."`
-- `AKEYLESS_API_GW_URL`: `"https://api.akeyless.io"`
+| Variable                       | Required | Default                 | Description |
+| ------------------------------ | -------- | ----------------------- | ----------- |
+| `AKEYLESS_TOKEN`               | Yes      | -                       | The token used for Akeyless API calls. If this environment variable is not set, the application will prompt for it at runtime. |
+| `AKEYLESS_IMPORT_STARTING_PATH`| No       | `"."`                   | The directory from which the application should start scanning for JSON files. |
+| `AKEYLESS_SECRET_NAME_PREFIX`  | No       | -                       | A prefix to prepend to the secret name for every API call. |
+| `AKEYLESS_API_GW_URL`          | No       | `"https://api.akeyless.io"` | The URL to the Akeyless API Gateway. |
 
 ## Usage
 
 1. Set the necessary environment variables.
 2. Run the application.
-
-```sh
-./json-secret-importer
-```
 
 ## Build
 
