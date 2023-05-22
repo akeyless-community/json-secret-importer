@@ -12,7 +12,7 @@ A command-line application written in Go that reads JSON secrets from a director
 
 | Variable                       | Required | Default                 | Description |
 | ------------------------------ | -------- | ----------------------- | ----------- |
-| `AKEYLESS_TOKEN`               | Yes      | -                       | The token used for Akeyless API calls. If this environment variable is not set, the application will prompt for it at runtime. |
+| `AKEYLESS_TOKEN`               | Yes      | -                       | The token used for Akeyless API calls. If this environment variable is not set, the application will prompt for it at runtime. You can retrieve the Akeyless Token by logging into any web console of your Akeyless account and click the top right hand corner down arrow and choose "Copy Token".|
 | `AKEYLESS_IMPORT_STARTING_PATH`| No       | `"."`                   | The directory from which the application should start scanning for JSON files. |
 | `AKEYLESS_SECRET_NAME_PREFIX`  | No       | -                       | A prefix to prepend to the secret name for every API call. |
 | `AKEYLESS_API_GW_URL`          | No       | `"https://api.akeyless.io"` | The URL to the Akeyless API Gateway. |
