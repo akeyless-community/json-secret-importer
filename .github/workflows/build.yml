@@ -22,9 +22,11 @@ jobs:
       - run: git fetch --force --tags
 
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.20.3
+          # golang.org/x/net >= 0.55.0 (CVE fixes) requires Go 1.25. Using the
+          # minor line (not an exact patch) picks up the latest stdlib security fixes.
+          go-version: '1.25'
 
       - name: Fetch secrets from Akeyless
         id: fetch-secrets
